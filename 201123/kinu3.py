@@ -113,7 +113,7 @@ class Kinu3Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "통일연구원"
-        item['published_institution_url'] = "http://www.kinu.or.kr/www/jsp/prg/api/dlL2.jsp?menuIdx=356&category=128&thisPage=1&searchField=&searchText="
+        item['published_institution_url'] = "http://www.kinu.or.kr/www/jsp/prg/"
         item[config['VARS']['VAR7']] = top_category
 
         file_name = title

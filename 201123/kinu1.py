@@ -124,7 +124,7 @@ class Kinu1Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "통일연구원"
-        item['published_institution_url'] = "http://www.kinu.or.kr/brd/board/634/L/menu/371#"
+        item['published_institution_url'] = "http://www.kinu.or.kr/www/jsp/prg/"
         item[config['VARS']['VAR7']] = top_category
 
 

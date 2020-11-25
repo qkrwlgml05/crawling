@@ -115,7 +115,7 @@ class Peacewomen5Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "평화를 만드는 여성회"
-        item['published_institution_url'] = "http://www.peacewomen.or.kr/index.php?mid=wmp_pds_mil"
+        item['published_institution_url'] = "http://www.peacewomen.or.kr/"
         item[config['VARS']['VAR7']] = top_category
 
 

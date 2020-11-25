@@ -116,7 +116,7 @@ class Spark1Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "평화와 통일을 여는 사람들"
-        item['published_institution_url'] = "http://www.spark946.org/data/nuri"
+        item['published_institution_url'] = "http://www.spark946.org/data/"
         item[config['VARS']['VAR7']] = top_category
 
         file_name = title
