@@ -5,7 +5,7 @@ import pymongo
 import jpype
 import scrapy
 import re
-from ecommerce.items import EcommerceItem
+from crawlNKDB.items import CrawlnkdbItem
 from tika import parser
 from tempfile import NamedTemporaryFile
 from itertools import chain
@@ -86,7 +86,7 @@ class Kinu46Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         category_no = response.meta['category_no']
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="cmsContent"]/div[3]/table/tbody/tr[' + str(category_no) + ']/td[2]/text()').get()
