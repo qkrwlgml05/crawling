@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = 'crawlNKDB.spiders'
 
 # Mongo DB
 ITEM_PIPELINES = {'crawlNKDB.pipelines.CrawlnkdbPipeline': 300, }
-MONGO_URI = 'mongodb://qkrwlgml:park5891@127.0.0.1'
+MONGO_URI = 'mongodb://{mongo_name}:{mongo_password}@127.0.0.1'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'crawlNKDB (+http://www.yourdomain.com)'
