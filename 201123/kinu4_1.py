@@ -5,7 +5,7 @@ import pymongo
 import jpype
 import scrapy
 import re
-from ecommerce.items import EcommerceItem
+from crawlNKDB.items import CrawlnkdbItem
 from tika import parser
 from tempfile import NamedTemporaryFile
 from itertools import chain
@@ -86,7 +86,7 @@ class Kinu41Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         category_no = response.meta['category_no']
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="cmsContent"]/div[3]/table/tbody/tr[' + str(category_no) + ']/td[2]/text()').get()
@@ -95,8 +95,8 @@ class Kinu41Spider(scrapy.Spider):
         # table_text = response.css('#main > table > tbody > tr.boardview2 td::text').extract()
         # body = response.css('.descArea')[0].get_text()
 
-        #body = response.xpath('//*[@id="tab_con"]').get()
-        body = "북한당국이 발간한 최초의 종합 통계집인 동시에 현재까지 입수 가능한 거의 유일한 북한 공식 통계집이다. 1945년 이후 1960년대 초까지 북한당국은 주기적으로 공식 통계를 발표해 왔는데, 동 통계집은 이렇게 발표된 통계를 '자연조건' 및 '행정구역'에서부터 '교육', '보건'에 이르기까지 각 항목별로 체계적으로 정리하고 있다. 이들 통계는 북한의 공식통계가 매우 희소한 오늘날의 북한을 이해하기 위해서도 매우 귀중한 자료라 할 수 있다."
+        body = response.xpath('//*[@id="cmsContent"]/div[1]/div/div[2]/ul/li/text()').get()
+        # body = "북한당국이 발간한 최초의 종합 통계집인 동시에 현재까지 입수 가능한 거의 유일한 북한 공식 통계집이다. 1945년 이후 1960년대 초까지 북한당국은 주기적으로 공식 통계를 발표해 왔는데, 동 통계집은 이렇게 발표된 통계를 '자연조건' 및 '행정구역'에서부터 '교육', '보건'에 이르기까지 각 항목별로 체계적으로 정리하고 있다. 이들 통계는 북한의 공식통계가 매우 희소한 오늘날의 북한을 이해하기 위해서도 매우 귀중한 자료라 할 수 있다."
 
         # body = response.css('.descArea').xpath('string()').extract()
 
@@ -117,7 +117,7 @@ class Kinu41Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "통일연구원"
-        item['published_institution_url'] = "https://www.kinu.or.kr/brd/board/636/L/CATEGORY/688/menu/680?brdCodeField=CATEGORY&brdCodeValue=688"
+        item['published_institution_url'] = "http://www.kinu.or.kr/www/jsp/prg/"
         item[config['VARS']['VAR7']] = top_category
 
 

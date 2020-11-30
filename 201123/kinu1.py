@@ -5,7 +5,7 @@ import pymongo
 import jpype
 import scrapy
 import re
-from ecommerce.items import EcommerceItem
+from crawlNKDB.items import CrawlnkdbItem
 from tika import parser
 from tempfile import NamedTemporaryFile
 from itertools import chain
@@ -86,7 +86,7 @@ class Kinu1Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="cmsContent"]/div[1]/p/text()').get()
         #print(title)
@@ -124,7 +124,7 @@ class Kinu1Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "통일연구원"
-        item['published_institution_url'] = "http://www.kinu.or.kr/brd/board/634/L/menu/371#"
+        item['published_institution_url'] = "http://www.kinu.or.kr/www/jsp/prg/"
         item[config['VARS']['VAR7']] = top_category
 
 

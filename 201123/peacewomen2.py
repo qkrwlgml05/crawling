@@ -5,7 +5,7 @@ import pymongo
 import jpype
 import scrapy
 import re
-from ecommerce.items import EcommerceItem
+from crawlNKDB.items import CrawlnkdbItem
 from tika import parser
 from tempfile import NamedTemporaryFile
 from itertools import chain
@@ -81,7 +81,7 @@ class Peacewomen2Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         #title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="s_mid21_wrap0"]/div/div[1]/div[1]/h1/a/span/text()').get()
         if title is None:
@@ -112,7 +112,7 @@ class Peacewomen2Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "평화를 만드는 여성회"
-        item['published_institution_url'] = "http://www.peacewomen.or.kr/index.php?mid=wmp_pds_mil"
+        item['published_institution_url'] = "http://www.peacewomen.or.kr/"
         item[config['VARS']['VAR7']] = top_category
 
 

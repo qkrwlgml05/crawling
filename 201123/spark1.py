@@ -5,7 +5,7 @@ import pymongo
 import jpype
 import scrapy
 import re
-from ecommerce.items import EcommerceItem
+from crawlNKDB.items import CrawlnkdbItem
 from tika import parser
 from tempfile import NamedTemporaryFile
 from itertools import chain
@@ -90,7 +90,7 @@ class Spark1Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="subConts"]/section/article/header/h1/text()').get()
 
@@ -116,7 +116,7 @@ class Spark1Spider(scrapy.Spider):
         item['post_writer'] = writer.strip()
         item['post_body'] = body_text.strip()
         item['published_institution'] = "평화와 통일을 여는 사람들"
-        item['published_institution_url'] = "http://www.spark946.org/data/nuri"
+        item['published_institution_url'] = "http://www.spark946.org/data/"
         item[config['VARS']['VAR7']] = top_category
 
         file_name = title
