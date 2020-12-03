@@ -91,7 +91,7 @@ class Uniedu2Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="content_section"]/div[2]/div[1]/h4/text()').get()
         #print(title)
@@ -100,24 +100,42 @@ class Uniedu2Spider(scrapy.Spider):
         # body = response.css('.descArea')[0].get_text()
 
         body = response.xpath('//*[@id="content_section"]/div[2]/div[2]').get()
-        body = re.sub('<script.*?>.*?</script>', '', body, 0, re.I | re.S)
-        body = re.sub('<.+?>', '', body, 0, re.I | re.S)
-        body = re.sub('&nbsp;| |\t|\r|\n', " ", body)
-        body = re.sub('\"', "'", body)
+        if body is None:
+            test1 = response.xpath('//*[@id="content_section"]/div[2]/dl[1]').get()
+            test1 = re.sub('<script.*?>.*?</script>', '', test1, 0, re.I | re.S)
+            test1 = re.sub('<.+?>', '', test1, 0, re.I | re.S)
+            test1 = re.sub('&nbsp;| |\t|\r|\n', " ", test1)
+            test1 = re.sub('\"', "'", test1)
+
+            test2 = response.xpath('//*[@id="content_section"]/div[2]/dl[2]').get()
+            test2 = re.sub('<script.*?>.*?</script>', '', test2, 0, re.I | re.S)
+            test2 = re.sub('<.+?>', '', test2, 0, re.I | re.S)
+            test2 = re.sub('&nbsp;| |\t|\r|\n', " ", test2)
+            test2 = re.sub('\"', "'", test2)
+            body = test1 + test2
+        else:
+            body = re.sub('<script.*?>.*?</script>', '', body, 0, re.I | re.S)
+            body = re.sub('<.+?>', '', body, 0, re.I | re.S)
+            body = re.sub('&nbsp;| |\t|\r|\n', " ", body)
+            body = re.sub('\"', "'", body)
+        if body is None:
+            body = "No text"
+        if body == '':
+            body = "No text"
 
         #print(body)
 
         # body = response.css('.descArea').xpath('string()').extract()
 
-        date = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[1]/p[1]/span/text()').get()
-        if date is None:
-            date = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[1]/p/span/text()').get()
+        date = response.xpath('//*[@id="content_section"]/div[2]/div/div[2]/p[1]/span/text()').get()
         #print(date)
+        if date is None:
+            date = "No date"
 
-        writer = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[1]/p[2]/span/text()').get()
-        if writer is None:
-            writer = "통일부"
+        writer = response.xpath('//*[@id="content_section"]/div[2]/div/div[2]/p[2]/span/text()').get()
         #print(writer)
+        if writer is None:
+            writer = "No writer"
 
         body_text = ''.join(body)
 
@@ -130,11 +148,16 @@ class Uniedu2Spider(scrapy.Spider):
         item[config['VARS']['VAR5']] = "통일부"
         item[config['VARS']['VAR6']] = "https://www.uniedu.go.kr/"
         item[config['VARS']['VAR7']] = top_category
-
         file_name = title
-        file_icon = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[2]/p/text()').get()
+        file_icon = response.xpath('//*[@id="content_section"]/div[2]/div/div[3]/p[1]/a/text()').get()
+        if not file_icon:
+            file_icon = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[2]/p/a/text()').get()
+        print(file_icon)
+        file_icon = None
         if file_icon:
-            file_download_url = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[2]/p/a/@href').extract()
+            file_download_url = response.xpath('//*[@id="content_section"]/div[2]/div/div[3]/p[1]/a/@href').extract()
+            if file_download_url is None:
+                file_download_url = response.xpath('//*[@id="content_section"]/div[2]/div[1]/div[2]/p/a/@href').extract()
             file_download_url = file_download_url[0]
             file_download_url = "https://www.uniedu.go.kr" + file_download_url
             item[config['VARS']['VAR10']] = file_download_url
