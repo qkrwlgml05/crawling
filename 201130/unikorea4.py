@@ -89,7 +89,7 @@ class Unikorea4Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         category_no = response.meta['category_no']
         category_no = int(category_no)
         title = response.xpath('//*[@id="bbsForm"]/div/article/div[1]/h3/text()').get()
@@ -118,27 +118,28 @@ class Unikorea4Spider(scrapy.Spider):
         item[config['VARS']['VAR7']] = top_category
 
         file_name = title
-        file_icon = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li[1]/a[1]/text()[1]').extract()
-        file_icon = re.sub('<script.*?>.*?</script>', '', body, 0, re.I | re.S)
-        file_icon = re.sub('<.+?>', '', file_icon, 0, re.I | re.S)
-        file_icon = re.sub('&nbsp;| |\t|\r|\n', " ", file_icon)
-        file_icon = re.sub('\"', "'", file_icon)
-        file_icon = None
+        file_icon = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li[1]/a[1]/text()').get()
+        # file_icon = None
+
         if file_icon:
-            file_download_url = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li[1]/a[1]/@href').extract()
+            file_download_url = response.xpath(
+                '//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li[1]/a[1]/@href').extract()
             file_download_url = file_download_url[0]
-            #file_download_url = "https://www.unikorea.go.kr/" + file_download_url
-            print(file_download_url)
+            slice = file_download_url.split("javascript:Jnit_boardDownload(")
+            slice = slice[1].split(";")
+            slice = slice[0].split("'")
+            file_download_url = "https://www.unikorea.go.kr/" + slice[1]
             item[config['VARS']['VAR10']] = file_download_url
             item[config['VARS']['VAR9']] = file_name
             print("@@@@@@file name ", file_name)
-            if title.find("hwp") != -1:
+            if file_icon.find("hwp") != -1:
                 print('find hwp')
-                yield scrapy.Request(file_download_url, callback=self.save_file_hwp, meta={'item': item})  #
+                yield scrapy.Request(file_download_url, callback=self.save_file_hwp, meta={'item': item},
+                                     dont_filter=True)  #
             else:
                 yield scrapy.Request(file_download_url, callback=self.save_file,
                                      meta={'item': item, 'file_download_url': file_download_url,
-                                           'file_name': title}, dont_filter=True)
+                                           'file_name': file_icon}, dont_filter=True)
         else:
             print("###############file does not exist#################")
             yield item
@@ -168,7 +169,6 @@ class Unikorea4Spider(scrapy.Spider):
         item[config['VARS']['VAR12']] = extracted_data
         yield item
 
-
     def save_file_hwp(self, response):
         item = response.meta['item']
         file_id = self.fs.put(response.body)
@@ -178,9 +178,9 @@ class Unikorea4Spider(scrapy.Spider):
         tempfile.write(response.body)
         tempfile.flush()
 
-        testPkg = jpype.JPackage('com.argo.hwp') # get the package
-        JavaCls = testPkg.Main # get the class
-        hwp_crawl = JavaCls() # create an instance of the class
+        testPkg = jpype.JPackage('com.argo.hwp')  # get the package
+        JavaCls = testPkg.Main  # get the class
+        hwp_crawl = JavaCls()  # create an instance of the class
         extracted_data = hwp_crawl.getStringTextFromHWP(tempfile.name)
         if str(type(extracted_data)) == "<class 'str'>":
             extracted_data = CONTROL_CHAR_RE.sub('', extracted_data)
@@ -190,4 +190,3 @@ class Unikorea4Spider(scrapy.Spider):
         tempfile.close()
         item[config['VARS']['VAR12']] = extracted_data
         yield item
-
