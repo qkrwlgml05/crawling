@@ -25,9 +25,9 @@ class Utf2Spider(scrapy.Spider):
         scrapy.Spider.__init__(self)
         self.start_urls = 'https://uft.na.go.kr:444/uft/reference/reference02.do'
         # 몽고에 넣겠다
-        #self.client = pymongo.MongoClient(config['DB']['MONGO_URI'])
-        #self.db = self.client['attchment']
-        #self.fs = gridfs.GridFS(self.db)
+        self.client = pymongo.MongoClient(config['DB']['MONGO_URI'])
+        self.db = self.client['attchment']
+        self.fs = gridfs.GridFS(self.db)
         # jpype, java lib 연결
         jarpath = os.path.join(os.path.abspath('.'), './../lib/hwp-crawl.jar')
         jpype.startJVM(jpype.getDefaultJVMPath(), "-Djava.class.path=%s" % jarpath)
@@ -47,7 +47,8 @@ class Utf2Spider(scrapy.Spider):
         while True:
             if page_no > last_page_no:
                 break
-            link = "https://uft.na.go.kr:444/uft/reference/reference02.do"
+            link = "https://uft.na.go.kr:444/uft/reference/reference02.do?mode=list&&articleLimit=10&article.offset=" + str(10*(page_no-1))
+            print(link)
             yield scrapy.Request(link, callback=self.parse_each_pages,
                                  meta={'page_no': page_no, 'last_page_no': last_page_no},
                                  dont_filter=True)
@@ -86,15 +87,14 @@ class Utf2Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/p[1]/text()').get()
-        #print(title)
 
         # table_text = response.css('#main > table > tbody > tr.boardview2 td::text').extract()
         # body = response.css('.descArea')[0].get_text()
         body = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/div[1]/pre/text()').get()
-        print(body)
+        #print(body)
 
         date = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/p[2]').get()
         date = re.sub('<script.*?>.*?</script>', '', date, 0, re.I | re.S)
@@ -104,8 +104,6 @@ class Utf2Spider(scrapy.Spider):
         date = date.split('|')
         writer = date[0]
         date = date[1]
-        #print(writer)
-        #print(date)
 
         #writer = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/p[2]/text()[1]/text()').get()
 
@@ -121,13 +119,12 @@ class Utf2Spider(scrapy.Spider):
         item[config['VARS']['VAR6']] = "https://uft.na.go.kr"
         item[config['VARS']['VAR7']] = top_category
 
+
         file_name = title
         file_icon = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/div[2]/p[3]/a[1]/text()').get()
-        file_icon = None
 
         if file_icon:
-            file_download_url = response.xpath(
-                '//*[@id="jwxe_main_content"]/div/div/div[1]/div/div[2]/p[3]/a[1]/@href').extract()
+            file_download_url = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/div[2]/p[3]/a[1]/@href').extract()
             file_download_url = file_download_url[0]
             file_download_url = "https://uft.na.go.kr:444/uft/reference/reference02.do" + file_download_url
             print(file_download_url)
@@ -192,6 +189,5 @@ class Utf2Spider(scrapy.Spider):
         tempfile.close()
         item[config['VARS']['VAR12']] = extracted_data
         yield item
-
 
 

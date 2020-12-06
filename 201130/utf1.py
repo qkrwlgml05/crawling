@@ -38,7 +38,7 @@ class Utf1Spider(scrapy.Spider):
     def parse(self, response):
         # print(response)
         # 페이지 개수
-        total_page_text = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[2]/div[2]/span[8]/a/@href').extract()
+        #total_page_text = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[2]/div[2]/span[8]/a/@href').extract()
         total_page_text = ['5']
         last_page_no = re.findall("\d+", str(total_page_text))
         page_no = 1
@@ -47,7 +47,8 @@ class Utf1Spider(scrapy.Spider):
         while True:
             if page_no > last_page_no:
                 break
-            link = "https://uft.na.go.kr:444/uft/reference/reference01.do"
+            link = "https://uft.na.go.kr:444/uft/reference/reference01.do?mode=list&&articleLimit=10&article.offset=" + str(10*(page_no-1))
+            #print(link)
             yield scrapy.Request(link, callback=self.parse_each_pages,
                                  meta={'page_no': page_no, 'last_page_no': last_page_no},
                                  dont_filter=True)
@@ -86,7 +87,7 @@ class Utf1Spider(scrapy.Spider):
 
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()s
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/p[1]/text()').get()
 
@@ -126,7 +127,7 @@ class Utf1Spider(scrapy.Spider):
             file_download_url = response.xpath('//*[@id="jwxe_main_content"]/div/div/div[1]/div/div[2]/p[3]/a[1]/@href').extract()
             file_download_url = file_download_url[0]
             file_download_url = "https://uft.na.go.kr:444/uft/reference/reference01.do" + file_download_url
-            print(file_download_url)
+            #print(file_download_url)
 
             item[config['VARS']['VAR10']] = file_download_url
             item[config['VARS']['VAR9']] = file_name
@@ -188,6 +189,5 @@ class Utf1Spider(scrapy.Spider):
         tempfile.close()
         item[config['VARS']['VAR12']] = extracted_data
         yield item
-
 
 
