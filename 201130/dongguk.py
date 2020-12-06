@@ -74,7 +74,7 @@ class DonggukSpider(scrapy.Spider):
             category_no += 1
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         # title = response.css('#main > table > thead > tr > th font::text').get()
         title = response.xpath('//*[@id="kboard-default-document"]/div[2]/div[1]/p/text()').get()
 
@@ -82,6 +82,8 @@ class DonggukSpider(scrapy.Spider):
         # body = response.css('.descArea')[0].get_text()
         body = response.xpath('//*[@id="kboard-default-document"]/div[2]/div[3]/div/text()').get()
         if body is None:
+            body = "No text"
+        if body == '':
             body = "No text"
 
         # body = response.css('.descArea').xpath('string()').extract()
@@ -94,30 +96,30 @@ class DonggukSpider(scrapy.Spider):
 
         top_category = response.xpath('//*[@id="main"]/header/div/h1/text()').get()
 
-        item['post_title'] = title.strip()
-        item['post_date'] = date.strip()
-        item['post_writer'] = writer.strip()
-        item['post_body'] = body_text.strip()
-        item['published_institution'] = "동국대학교 북한학연구"
-        item['published_institution_url'] = "https://nkstudy.dongguk.edu/?page_id=207/%27"
+
+        item[config['VARS']['VAR1']] = title.strip()
+        item[config['VARS']['VAR4']] = date.strip()
+        item[config['VARS']['VAR3']] = writer.strip()
+        item[config['VARS']['VAR2']] = body_text.strip()
+        item[config['VARS']['VAR5']] = "동국대학교 북한학연구소"
+        item[config['VARS']['VAR6']] = "https://nkstudy.dongguk.edu"
         item[config['VARS']['VAR7']] = top_category
 
         file_name = title
         file_icon = response.xpath('//*[@id="kboard-default-document"]/div[2]/div[4]/a/text()').get()
-        print(file_icon)
         file_icon = None
 
         if file_icon:
-            file_download_url = response.xpath('//*[@id="kboard-default-document"]/div[2]/div[4]/a/@href').extract()
+            file_download_url = response.xpath(
+                ' //*[@id="kboard-default-document"]/div[2]/div[4]/a/@href').extract()
             file_download_url = file_download_url[0]
-            print(file_download_url)
-
             item[config['VARS']['VAR10']] = file_download_url
             item[config['VARS']['VAR9']] = file_name
             print("@@@@@@file name ", file_name)
             if file_icon.find("hwp") != -1:
                 print('find hwp')
-                yield scrapy.Request(file_download_url, callback=self.save_file_hwp, meta={'item': item})  #
+                yield scrapy.Request(file_download_url, callback=self.save_file_hwp, meta={'item': item},
+                                     dont_filter=True)  #
             else:
                 yield scrapy.Request(file_download_url, callback=self.save_file,
                                      meta={'item': item, 'file_download_url': file_download_url,
@@ -172,6 +174,4 @@ class DonggukSpider(scrapy.Spider):
         tempfile.close()
         item[config['VARS']['VAR12']] = extracted_data
         yield item
-
-
 
