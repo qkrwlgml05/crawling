@@ -42,6 +42,7 @@ class Unikorea8Spider(scrapy.Spider):
         # print(response)
         # 페이지 개수
         total_page_text = response.xpath('//*[@id="bbsForm"]/div[2]/div[1]/ul/li[14]/a/@href').extract()
+        print("total_page_text = " + str(total_page_text))
         last_page_no = re.findall("\d+", str(total_page_text))
         page_no = 1
         # last_page_no[-1]
@@ -85,7 +86,7 @@ class Unikorea8Spider(scrapy.Spider):
             category_no += 1
 
     def parse_post(self, response):
-        item = EcommerceItem()
+        item = CrawlnkdbItem()
         category_no = response.meta['category_no']
         category_no = int(category_no)
 
@@ -94,7 +95,13 @@ class Unikorea8Spider(scrapy.Spider):
         # table_text = response.css('#main > table > tbody > tr.boardview2 td::text').extract()
         # body = response.css('.descArea')[0].get_text()
 
-        body = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/div[1]/p/text()').get()
+        body = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/div[1]').get()
+        if body is None:
+            body = "no text"
+        body = re.sub('<script.*?>.*?</script>', '', body, 0, re.I | re.S)
+        body = re.sub('<.+?>', '', body, 0, re.I | re.S)
+        body = re.sub('&nbsp;| |\t|\r|\n', " ", body)
+        body = re.sub('\"', "'", body)
         print(body)
 
         # body = response.css('.descArea').xpath('string()').extract()
@@ -117,28 +124,29 @@ class Unikorea8Spider(scrapy.Spider):
         item[config['VARS']['VAR7']] = top_category
 
         file_name = title
-        file_icon = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li[1]/a[1]/text()[1]').extract()
-        file_icon = re.sub('<script.*?>.*?</script>', '', body, 0, re.I | re.S)
-        file_icon = re.sub('<.+?>', '', file_icon, 0, re.I | re.S)
-        file_icon = re.sub('&nbsp;| |\t|\r|\n', " ", file_icon)
-        file_icon = re.sub('\"', "'", file_icon)
-        file_icon = None
+
+        file_icon = response.xpath('//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li/a[1]/text()').get()
+        # file_icon = None
 
         if file_icon:
             file_download_url = response.xpath(
-                '//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li[1]/a[1]/@href').extract()
+                '//*[@id="bbsForm"]/div/article/div[2]/section/div[2]/ul/li/a[1]/@href').extract()
             file_download_url = file_download_url[0]
-            file_download_url = "https://www.unikorea.go.kr/" + file_download_url
+            slice = file_download_url.split("javascript:Jnit_boardDownload(")
+            slice = slice[1].split(";")
+            slice = slice[0].split("'")
+            file_download_url = "https://www.unikorea.go.kr/" + slice[1]
             item[config['VARS']['VAR10']] = file_download_url
             item[config['VARS']['VAR9']] = file_name
             print("@@@@@@file name ", file_name)
-            if title.find("hwp") != -1:
+            if file_icon.find("hwp") != -1:
                 print('find hwp')
-                yield scrapy.Request(file_download_url, callback=self.save_file_hwp, meta={'item': item})  #
+                yield scrapy.Request(file_download_url, callback=self.save_file_hwp, meta={'item': item},
+                                     dont_filter=True)  #
             else:
                 yield scrapy.Request(file_download_url, callback=self.save_file,
                                      meta={'item': item, 'file_download_url': file_download_url,
-                                           'file_name': title}, dont_filter=True)
+                                           'file_name': file_icon}, dont_filter=True)
         else:
             print("###############file does not exist#################")
             yield item
